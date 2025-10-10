@@ -6,14 +6,10 @@ const userRegisterController = async (req, res) => {
         let { user_name, user_email, user_password, user_phone, user_age, user_height, user_weight } = req.body;
         const user_profileImage = req.file;
 
-        // normalize email
-        // user_email = user_email.trim().toLowerCase();
-
         // console.log(user_name, user_email, user_password, user_phone, user_age, user_height, user_weight, user_profileImage);
 
         // Check if user already exists
         const isFound = await userTable.findOne({ user_email });
-        // console.log(isFound,"qwerwerwerwr");
 
         if (isFound) {
             return res.status(400).send({
