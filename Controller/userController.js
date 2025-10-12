@@ -1,14 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { userTable } = require('../Model/table');
+
 const userRegisterController = async (req, res) => {
     try {
         let { user_name, user_email, user_password, user_phone, user_age, user_height, user_weight } = req.body;
         const user_profileImage = req.file;
 
-        // console.log(user_name, user_email, user_password, user_phone, user_age, user_height, user_weight, user_profileImage);
-
-        // Check if user already exists
         const isFound = await userTable.findOne({ user_email });
 
         if (isFound) {
@@ -20,10 +18,8 @@ const userRegisterController = async (req, res) => {
             });
         }
 
-        // Password encryption
         const hashedPassword = await bcrypt.hash(user_password, 10);
 
-        // Create new user
         const data = new userTable({
             user_name,
             user_email,
@@ -58,9 +54,9 @@ const userRegisterController = async (req, res) => {
 };
 
 const userLoginController = async (req, res) => {
-    try { 
-
+    try {
         const { user_email, user_password } = req.body;
+
         if (!user_email || !user_password) {
             return res.status(400).send({
                 success: false,
@@ -69,10 +65,30 @@ const userLoginController = async (req, res) => {
                 message: "Email and password are required"
             });
         }
-        // console.log(user_email, user_password);
-        
 
-        const user = await userTable.findOne({ user_email });
+        // ✅ Check if admin login
+        if (
+            user_email === process.env.ADMIN_EMAIL &&
+            user_password === process.env.ADMIN_PASSWORD
+        ) {
+            const token = jwt.sign(
+                { userType: "admin", email: user_email },
+                process.env.JWT_SECRET,
+                { expiresIn: "1d" }
+            );
+
+            return res.status(200).send({
+                success: true,
+                code: 200,
+                message: "Admin login successful",
+                userType: "admin",
+                token,
+                redirectTo: "/adminDashboard" // frontend can use this to redirect
+            });
+        }
+
+        // ✅ Else normal user login
+        const user = await userTable.findOne({ user_email }).lean();
         if (!user) {
             return res.status(404).send({
                 success: false,
@@ -92,18 +108,23 @@ const userLoginController = async (req, res) => {
             });
         }
 
-        const token =await jwt.sign(
-            { id: user._id },
+        const token = jwt.sign(
+            { id: user._id, userType: "user" },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
-        ); 
-    
-      return  res.status(200).send({
+        );
+
+        const safeUser = { ...user };
+        delete safeUser.user_password;
+
+        return res.status(200).send({
             success: true,
             code: 200,
-            message: "Login successful",
-            data: user,
-            token
+            message: "User login successful",
+            userType: "user",
+            user: safeUser,
+            token,
+            redirectTo: "/userDashboard"
         });
 
     } catch (err) {
@@ -117,7 +138,6 @@ const userLoginController = async (req, res) => {
         });
     }
 };
-
 
 module.exports = {
     userRegisterController,
