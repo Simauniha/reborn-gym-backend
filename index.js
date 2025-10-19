@@ -12,11 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 DbConnect();
 
-
 const PORT=process.env.PORT || 8000;
-
-
-
 
 app.use('/api',router)
 

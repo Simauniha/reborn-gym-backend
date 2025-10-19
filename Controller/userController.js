@@ -139,7 +139,65 @@ const userLoginController = async (req, res) => {
     }
 };
 
+const getAllUsersController = async (req, res) => {
+  try {
+    // Fetch selected user fields only
+    const users = await userTable.find(
+      {},
+      "user_name user_email user_phone user_age user_height user_weight "
+    );
+
+    res.status(200).send({
+      success: true,
+      code: 200,
+      message: "Users fetched successfully",
+      users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send({
+      success: false,
+      code: 500,
+      message: "Error fetching users",
+      error: error.message,
+    });
+  }
+};
+
+const getUserProfileController = async (req, res) => {
+  try {
+    const userId = req.user.id; // ✅ Extracted from token
+
+    const user = await userTable.findById(userId).select(
+      "user_name user_email user_phone user_age user_height user_weight"
+    );
+
+    if (!user) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "User profile fetched successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Profile Fetch Error:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error fetching user profile",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
     userRegisterController,
-    userLoginController
+    userLoginController,
+    getAllUsersController,
+    getUserProfileController
 };
