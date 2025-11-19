@@ -66,7 +66,6 @@ const userLoginController = async (req, res) => {
       });
     }
 
-    // ✅ Check if admin login
     if (
       user_email === process.env.ADMIN_EMAIL &&
       user_password === process.env.ADMIN_PASSWORD
@@ -87,7 +86,6 @@ const userLoginController = async (req, res) => {
       });
     }
 
-    // ✅ Else normal user login
     const user = await userTable.findOne({ user_email }).lean();
     if (!user) {
       return res.status(404).send({
@@ -166,7 +164,7 @@ const getAllUsersController = async (req, res) => {
 
 const getUserProfileController = async (req, res) => {
   try {
-    const userId = req.user.id; // ✅ Extracted from token
+    const userId = req.user.id;
 
     const user = await userTable.findById(userId).select(
       "user_name user_email user_phone user_age user_height user_weight"
