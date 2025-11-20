@@ -35,5 +35,12 @@ router.put(
   updatePasswordController
 );
 
+const {
+  updateUserById,
+  deleteUserById
+} = require('../Controller/userController');
+
+router.put("/users/:id", updateUserById);
+router.delete("/users/:id", deleteUserById);
 
 module.exports = router;

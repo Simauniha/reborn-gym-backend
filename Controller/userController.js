@@ -285,6 +285,43 @@ const updateProfileController = async (req, res) => {
   }
 };
 
+const updateUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    const user = await userTable.findByIdAndUpdate(id, updatedData, { new: true }).select(
+      "user_name user_email user_phone user_age user_height user_weight"
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User updated successfully", user });
+  } catch (error) {
+    console.error("Update User Error:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await userTable.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Delete User Error:", error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   userRegisterController,
   userLoginController,
@@ -292,4 +329,6 @@ module.exports = {
   getUserProfileController,
   updateProfileController,
   updatePasswordController,
+  updateUserById,
+  deleteUserById,
 };
